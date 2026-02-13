@@ -57,8 +57,12 @@
   <body class="bg-slate-900">
     <div id="root"></div>
     
-    <!-- Babel will find this script, transpile it, and execute it. -->
-    <!-- It will also handle "import" statements for local files inside the script. -->
-    <script type="text/babel" data-presets="react,typescript" src="./index.tsx"></script>
+    <!-- 
+      - data-type="module" is crucial. It tells Babel to execute the transpiled code
+        as a JavaScript module, which allows the use of 'import' statements.
+      - data-presets="react,typescript" tells Babel how to transpile the code.
+      - src="./index.tsx" is the entry point of the application.
+    -->
+    <script type="text/babel" data-type="module" data-presets="react,typescript" src="./index.tsx"></script>
   </body>
 </html>
