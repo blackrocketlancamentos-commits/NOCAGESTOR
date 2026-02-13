@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import * as api from '../services/api';
+import { GOOGLE_SCRIPT_URL } from '../config';
 
 interface ClientInfo {
   name: string;
@@ -40,7 +41,7 @@ export const SimpleTrackerForm: React.FC<SimpleTrackerFormProps> = ({ onUseForCo
         setIsLoading(true);
         try {
             const result = await api.createSimpleTracker(name, url);
-            const fullUrl = `${window.location.origin.replace(/\/$/, '')}${window.location.pathname.replace(/\/$/, '')}?id=${result.id}`;
+            const fullUrl = `${GOOGLE_SCRIPT_URL}?id=${result.id}`;
             setGeneratedUrl(fullUrl);
             onTrackerCreated(); // Refresh data in parent
             // Resetar campos após sucesso

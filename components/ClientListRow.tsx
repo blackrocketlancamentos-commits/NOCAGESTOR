@@ -1,6 +1,8 @@
+
 import React, { useState } from 'react';
 import { Client, TrackedLink, ClientType } from '../types';
 import { getStatus, parsePackageValue, parseContractType } from '../utils';
+import { GOOGLE_SCRIPT_URL } from '../config';
 
 interface ClientListRowProps {
   client: Client;
@@ -76,7 +78,7 @@ export const ClientListRow: React.FC<ClientListRowProps> = ({ client, onArchive,
 
     const handleCopyClick = (e: React.MouseEvent, link: TrackedLink) => {
         e.stopPropagation();
-        const url = `${window.location.origin.replace(/\/$/, '')}${window.location.pathname.replace(/\/$/, '')}?id=${link.id}`;
+        const url = `${GOOGLE_SCRIPT_URL}?id=${link.id}`;
         navigator.clipboard.writeText(url);
         setCopiedId(link.id);
         setTimeout(() => setCopiedId(null), 2000);
@@ -88,7 +90,7 @@ export const ClientListRow: React.FC<ClientListRowProps> = ({ client, onArchive,
             alert("Nenhum material de trabalho encontrado para este contrato.");
             return;
         }
-        const trackableUrl = `${window.location.origin.replace(/\/$/, '')}${window.location.pathname.replace(/\/$/, '')}?id=${contract.id}`;
+        const trackableUrl = `${GOOGLE_SCRIPT_URL}?id=${contract.id}`;
         navigator.clipboard.writeText(trackableUrl);
         setStoryCopiedId(contract.id);
         window.open(contract.workMaterialUrls[0].url, '_blank', 'noopener,noreferrer');
