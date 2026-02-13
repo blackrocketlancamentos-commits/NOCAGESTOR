@@ -8,22 +8,21 @@
     <title>NOCA Gestor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- SystemJS e Babel Plugin para carregamento de módulos com transpilação -->
-    <script src="https://unpkg.com/systemjs@6.14.3/dist/s.min.js"></script>
-    <script src="https://unpkg.com/systemjs-plugin-babel@0.0.25/plugin-babel.js"></script>
-    <script src="https://unpkg.com/systemjs-plugin-babel@0.0.25/babel-7.24.7.js"></script>
-    
-    <!-- Mapa de importação para o SystemJS -->
-    <script type="systemjs-importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@19.2.4",
-        "react-dom": "https://esm.sh/react-dom@19.2.4",
-        "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
-        "@google/genai": "https://esm.sh/@google/genai@1.41.0"
-      }
-    }
-    </script>
+    <!-- Babel Standalone to transpile TSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Import Map to resolve bare module specifiers like "react" -->
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@19.2.4",
+    "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
+    "@google/genai": "https://esm.sh/@google/genai@1.41.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/"
+  }
+}
+</script>
     
     <style>
       @keyframes fadeInOut {
@@ -54,38 +53,12 @@
         to { transform: translateY(0); opacity: 1; }
       }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.4",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.41.0"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
-</head>
+  </head>
   <body class="bg-slate-900">
     <div id="root"></div>
     
-    <!-- Configuração e inicialização do SystemJS -->
-    <script>
-      System.config({
-        transpiler: 'plugin-babel',
-        babelOptions: {
-          presets: ['react', 'typescript']
-        },
-        map: {
-          'plugin-babel': 'https://unpkg.com/systemjs-plugin-babel@0.0.25/plugin-babel.js',
-          'systemjs-babel-build': 'https://unpkg.com/systemjs-plugin-babel@0.0.25/systemjs-babel-7.24.7.js'
-        }
-      });
-      // Inicia o carregamento do aplicativo
-      System.import('./index.tsx').catch(function(err){ 
-        console.error("Erro ao carregar o módulo principal:", err); 
-      });
-    </script>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <!-- Babel will find this script, transpile it, and execute it. -->
+    <!-- It will also handle "import" statements for local files inside the script. -->
+    <script type="text/babel" data-presets="react,typescript" src="./index.tsx"></script>
+  </body>
 </html>
