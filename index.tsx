@@ -1,3 +1,5 @@
+
+
 // =================================================================================
 // BUNDLED APPLICATION - All TSX/TS files are combined here to avoid MIME type errors
 // on static hosts like GitHub Pages.
@@ -88,6 +90,7 @@ interface Settings {
   googleCalendarId?: string;
   zapiInstanceId?: string;
   zapiToken?: string;
+
   zapiClientToken?: string;
 }
 
@@ -428,7 +431,6 @@ namespace api {
     try {
         const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
         const fullPrompt = `Crie uma mensagem de WhatsApp curta, amigável e profissional para uma campanha de marketing chamada "${campaignName}". O objetivo da campanha é: "${prompt}". A mensagem deve ser otimizada para conversão e incluir uma chamada para ação clara. Não inclua saudações como "Olá," ou despedidas, apenas o corpo da mensagem. Use emojis de forma moderada e relevante.`;
-// @google/genai-api-fix: Use response.text to extract the text from the response.
         const response = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: fullPrompt });
         const text = response.text;
         if (text) return text.trim();
@@ -792,568 +794,6 @@ const formatDate = (dateString?: string) => {
 
 const ClientListRow: React.FC<{ client: Client; onArchive: (id: string, isArchived: boolean) => void; onRenew: (link: TrackedLink) => void; isPending: boolean; onUpdateDates: (id: string, startDate: string, endDate: string) => void; onUpdateContactInfo: (id: string, phone: string, instagram: string, email: string, cpf: string, cnpj: string, companyName: string) => void; onUpdatePackageInfo: (id: string, packageInfo: string) => void; onDeleteContract: (id: string) => void; }> = ({ client, onArchive, onRenew, isPending, onUpdateDates, onUpdateContactInfo, onUpdatePackageInfo, onDeleteContract }) => { const [isExpanded, setIsExpanded] = useState(false); const [copiedId, setCopiedId] = useState<string | null>(null); const [storyCopiedId, setStoryCopiedId] = useState<string | null>(null); const totalClicks = client.contracts.reduce((acc, c) => acc + c.clicks, 0); const firstWorkMaterialUrl = client.contracts.flatMap(c => c.workMaterialUrls).find(wm => wm.url)?.url; const latestContract = client.contracts[0]; const contractType = latestContract ? parseContractType(latestContract.packageInfo) : 'N/A'; const handleCopyClick = (e: React.MouseEvent, link: TrackedLink) => { e.stopPropagation(); const url = `${GOOGLE_SCRIPT_URL}?id=${link.id}`; navigator.clipboard.writeText(url); setCopiedId(link.id); setTimeout(() => setCopiedId(null), 2000); }; const handlePostStoryClick = (e: React.MouseEvent, contract: TrackedLink) => { e.stopPropagation(); if (!contract.workMaterialUrls || contract.workMaterialUrls.length === 0) { alert("Nenhum material de trabalho encontrado para este contrato."); return; } const trackableUrl = `${GOOGLE_SCRIPT_URL}?id=${contract.id}`; navigator.clipboard.writeText(trackableUrl); setStoryCopiedId(contract.id); window.open(contract.workMaterialUrls[0].url, '_blank', 'noopener,noreferrer'); setTimeout(() => setStoryCopiedId(null), 2000); }; const handleEditContract = (e: React.MouseEvent, contract: TrackedLink) => { e.stopPropagation(); const newPackageInfo = prompt("Editar Pacote do Cliente:", contract.packageInfo); if (newPackageInfo !== null) { onUpdatePackageInfo(contract.id, newPackageInfo); } const newStartDate = prompt("Editar Data de Início (AAAA-MM-DD):", contract.startDate); if (newStartDate !== null) { const newEndDate = prompt("Editar Data de Vencimento (AAAA-MM-DD):", contract.endDate); if (newEndDate !== null) { onUpdateDates(contract.id, newStartDate, newEndDate); } } }; const handleArchiveClick = (e: React.MouseEvent, contract: TrackedLink) => { e.stopPropagation(); if (window.confirm(`Tem certeza que deseja ${contract.isArchived ? 'desarquivar' : 'arquivar'} este contrato?`)) { onArchive(contract.id, !contract.isArchived); } }; const handleDeleteClick = (e: React.MouseEvent, contract: TrackedLink) => { e.stopPropagation(); if (window.confirm('Atenção! Tem certeza que deseja DELETAR este contrato? Esta ação é irreversível e removerá também a transação financeira associada.')) { onDeleteContract(contract.id); } }; return ( <div className={`bg-slate-800/50 rounded-lg transition-colors duration-300 ${isExpanded ? 'bg-slate-700/50' : 'hover:bg-slate-700/50'}`}> {isPending && ( <div className="absolute inset-0 bg-slate-900 bg-opacity-80 flex items-center justify-center rounded-lg z-20"> <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> </div> )} <div className="flex flex-wrap md:flex-nowrap md:items-center text-sm w-full p-3 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}> <div className="md:w-[4%] text-center text-slate-400"> <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mx-auto transition-transform ${isExpanded ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7-7" /></svg> </div> <div className="w-full md:w-[26%] pl-2 pr-4"> <p className="font-bold text-slate-100 truncate" title={client.name}>{client.name}</p> {client.companyName && <p className="text-xs text-slate-400 truncate" title={client.companyName}>{client.companyName}</p>} </div> <div className="w-1/3 md:w-[12%] text-center my-2 md:my-0"> <ClientTypeTag type={client.clientType} /> </div> <div className="w-1/3 md:w-[12%] text-center my-2 md:my-0"> <PlanTag plan={contractType} /> </div> <div className="w-1/3 md:w-[10%] text-center my-2 md:my-0"> <span className="font-semibold text-lg text-slate-100 bg-blue-900/50 px-3 py-1 rounded-full">{client.contracts.length}</span> </div> <div className="w-1/3 md:w-[10%] text-center font-bold text-lg text-blue-300 my-2 md:my-0">{totalClicks}</div> <div className="w-full md:w-[26%] flex items-center justify-center gap-2 mt-3 md:mt-0 md:ml-auto"> <button onClick={(e) => { e.stopPropagation(); onRenew(client.contracts[0]); }} className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-xs font-semibold transition-colors">Novo Contrato</button> </div> </div> {isExpanded && ( <div className="px-4 pb-3 space-y-2"> <div className="p-3 my-2 bg-slate-900/40 rounded-md border border-slate-700"> <p className="text-sm font-semibold text-slate-300 mb-2">Informações de Contato</p> <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm"> <div className="flex items-center gap-2"> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.956-.5-5.688-1.448l-6.305 1.654z"/></svg> {client.phone ? <a href={`https://wa.me/55${String(client.phone).replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white hover:underline">{client.phone}</a> : <span className="text-slate-500 italic">Não informado</span>} </div> <div className="flex items-center gap-2"> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-pink-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg> {client.instagram ? <a href={`https://instagram.com/${String(client.instagram).replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white hover:underline">{client.instagram}</a> : <span className="text-slate-500 italic">Não informado</span>} </div> <div className="flex items-center gap-2"> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> {client.email ? <a href={`mailto:${client.email}`} className="text-slate-300 hover:text-white hover:underline">{client.email}</a> : <span className="text-slate-500 italic">Não informado</span>} </div> <div className="flex items-center gap-2"> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h2a2 2 0 012 2v1m-6 4h.01M9 16h.01" /></svg> {client.cpf ? <span className="text-slate-300">{client.cpf}</span> : <span className="text-slate-500 italic">CPF não informado</span>} </div> <div className="flex items-center gap-2"> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m-1 4h1m5-4h1m-1 4h1" /></svg> {client.cnpj ? <span className="text-slate-300">{client.cnpj}</span> : <span className="text-slate-500 italic">CNPJ não informado</span>} </div> <button onClick={(e) => { e.stopPropagation(); const linkForContact = client.contracts[0]; const newCompanyName = prompt("Editar Nome da Empresa:", linkForContact.companyName || ""); if (newCompanyName === null) return; const newPhone = prompt("Editar Telefone:", linkForContact.phone || ""); if (newPhone === null) return; const newInstagram = prompt("Editar Instagram:", linkForContact.instagram || ""); if (newInstagram === null) return; const newEmail = prompt("Editar E-mail:", linkForContact.email || ""); if (newEmail === null) return; const newCpf = prompt("Editar CPF:", linkForContact.cpf || ""); if (newCpf === null) return; const newCnpj = prompt("Editar CNPJ:", linkForContact.cnpj || ""); if (newCnpj === null) return; client.contracts.forEach(c => onUpdateContactInfo(c.id, newPhone, newInstagram, newEmail, newCpf, newCnpj, newCompanyName)); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white mt-2" title="Editar Contato"> <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg> Editar Contatos </button> </div> </div> <div className="hidden md:flex items-center p-2 text-xs font-semibold text-slate-400 border-y border-slate-700"> <div className="w-[15%]">ID Contrato</div> <div className="w-[10%] text-center">Status</div> <div className="w-[12%] text-center">Vencimento</div> <div className="w-[10%] text-center">Valor</div> <div className="w-[8%] text-center">Cliques</div> <div className="w-[45%] text-center">Ações</div> </div> {client.contracts.map(contract => ( <div key={contract.id} className={`flex flex-wrap items-center p-2 rounded-md hover:bg-slate-900/50 ${contract.isArchived ? 'opacity-50' : ''}`}> <div className="w-full md:w-[15%] font-medium text-blue-300 truncate mb-2 md:mb-0" title={contract.id}>{contract.id.substring(0, 8)}...</div> <div className="w-1/3 md:w-[10%] text-center"><StatusTag endDate={contract.endDate} /></div> <div className="w-1/3 md:w-[12%] text-center text-slate-300">{formatDate(contract.endDate)}</div> <div className="w-1/3 md:w-[10%] text-center font-semibold text-teal-300">{parsePackageValue(contract.packageInfo) > 0 ? `R$ ${parsePackageValue(contract.packageInfo).toFixed(2)}` : 'N/A'}</div> <div className="w-1/3 md:w-[8%] text-center font-bold text-lg text-blue-300">{contract.clicks}</div> <div className="w-full md:w-[45%] flex items-center justify-center gap-2 mt-3 md:mt-0"> <button onClick={(e) => handleCopyClick(e, contract)} className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold transition-colors"> {copiedId === contract.id ? 'Copiado!' : 'Link Rastreio'} </button> {contract.workMaterialUrls && contract.workMaterialUrls.length > 0 && ( <button onClick={(e) => handlePostStoryClick(e, contract)} className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-xs font-semibold transition-colors"> {storyCopiedId === contract.id ? 'Link Copiado!' : 'Postar Stories'} </button> )} <button onClick={(e) => handleEditContract(e, contract)} className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-700" title="Editar Contrato"> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg> </button> <button onClick={(e) => {e.stopPropagation(); onRenew(contract)}} className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-700" title="Criar Novo Contrato (Renovação)"> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> </button> <button onClick={(e) => handleArchiveClick(e, contract)} className="p-1.5 text-slate-400 hover:text-white rounded-md hover:bg-slate-700" title={contract.isArchived ? 'Desarquivar' : 'Arquivar'}> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> </button> <button onClick={(e) => handleDeleteClick(e, contract)} className="p-1.5 text-slate-400 hover:text-red-400 rounded-md hover:bg-slate-700" title="Deletar Contrato"> <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg> </button> </div> </div> ))} </div> )} </div> ); };
 
-// START OF: Added components
-const EventModal: React.FC<{ eventData: Partial<AgendaItem> | null; onClose: () => void; onSave: (event: Omit<AgendaItem, 'id'> | AgendaItem) => Promise<void>; onDelete: (eventId: string) => Promise<void>; }> = ({ eventData, onClose, onSave, onDelete }) => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [startTime, setStartTime] = useState('');
-    const [endDate, setEndDate] = useState('');
-    const [endTime, setEndTime] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-
-    useEffect(() => {
-        if (eventData) {
-            const start = new Date(eventData.start || new Date());
-            const end = new Date(eventData.end || new Date());
-
-            setTitle(eventData.title || '');
-            setDescription(eventData.description || '');
-            setStartDate(start.toISOString().split('T')[0]);
-            setStartTime(start.toTimeString().substring(0, 5));
-            setEndDate(end.toISOString().split('T')[0]);
-            setEndTime(end.toTimeString().substring(0, 5));
-        }
-    }, [eventData]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!title) {
-            alert('O título é obrigatório.');
-            return;
-        }
-
-        setIsSaving(true);
-        const startDateTime = new Date(`${startDate}T${startTime}`);
-        const endDateTime = new Date(`${endDate}T${endTime}`);
-
-        if (startDateTime >= endDateTime) {
-            alert('A data/hora de término deve ser posterior à de início.');
-            setIsSaving(false);
-            return;
-        }
-
-        const payload = {
-            ...eventData,
-            title,
-            description,
-            start: startDateTime.toISOString(),
-            end: endDateTime.toISOString(),
-            isAllDay: false,
-        };
-        
-        await onSave(payload as AgendaItem); // Type assertion, as 'id' might be missing for new events
-        setIsSaving(false);
-    };
-
-    const handleDelete = async () => {
-        if (eventData?.id) {
-             setIsSaving(true);
-             await onDelete(eventData.id);
-             setIsSaving(false);
-        }
-    };
-
-    if (!eventData) return null;
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4 modal-overlay" onClick={onClose}>
-            <div className="bg-slate-800 rounded-lg border border-slate-700 shadow-2xl w-full max-w-lg modal-content" onClick={e => e.stopPropagation()}>
-                <form onSubmit={handleSubmit}>
-                    <header className="flex justify-between items-center p-4 border-b border-slate-700">
-                        <h2 className="text-xl font-bold text-slate-100">{eventData.id ? 'Editar Evento' : 'Novo Evento'}</h2>
-                        <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-slate-700 text-slate-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
-                    </header>
-
-                    <div className="p-5 space-y-4">
-                        <div>
-                            <label htmlFor="event-title" className="block text-sm font-medium text-slate-300 mb-1">Título</label>
-                            <input type="text" id="event-title" value={title} onChange={e => setTitle(e.target.value)} required className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400"/>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label htmlFor="event-start-date" className="block text-sm font-medium text-slate-300 mb-1">Início</label>
-                                <div className="flex gap-2">
-                                     <input type="date" id="event-start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md" style={{ colorScheme: 'dark' }} />
-                                     <input type="time" id="event-start-time" value={startTime} onChange={e => setStartTime(e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md" style={{ colorScheme: 'dark' }} />
-                                </div>
-                            </div>
-                             <div>
-                                <label htmlFor="event-end-date" className="block text-sm font-medium text-slate-300 mb-1">Término</label>
-                                <div className="flex gap-2">
-                                     <input type="date" id="event-end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md" style={{ colorScheme: 'dark' }}/>
-                                     <input type="time" id="event-end-time" value={endTime} onChange={e => setEndTime(e.target.value)} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md" style={{ colorScheme: 'dark' }} />
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="event-description" className="block text-sm font-medium text-slate-300 mb-1">Descrição</label>
-                            <textarea id="event-description" value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400"></textarea>
-                        </div>
-                    </div>
-                    
-                    <footer className="flex justify-between items-center p-4 bg-slate-900/50 rounded-b-lg">
-                        <div>
-                            {eventData.id && (
-                                <button type="button" onClick={handleDelete} disabled={isSaving} className="px-4 py-2 text-sm bg-red-800 hover:bg-red-700 text-white font-semibold rounded-md disabled:opacity-50">
-                                    Excluir
-                                </button>
-                            )}
-                        </div>
-                         <div className="flex gap-2">
-                            <button type="button" onClick={onClose} className="px-4 py-2 text-sm bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-md">Cancelar</button>
-                            <button type="submit" disabled={isSaving} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md disabled:opacity-50">
-                               {isSaving ? 'Salvando...' : 'Salvar'}
-                            </button>
-                        </div>
-                    </footer>
-                </form>
-            </div>
-        </div>
-    );
-};
-
-const CalendarView: React.FC<{ view: 'day' | 'week' | 'month' | 'year'; currentDate: Date; events: AgendaItem[]; onEventClick: (event: AgendaItem) => void; onSlotClick: (date: Date) => void; }> = ({ view, currentDate, events, onEventClick, onSlotClick }) => {
-    const WEEK_DAYS_CALENDAR = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    const HOUR_HEIGHT_REM = 3;
-    
-    const CurrentTimeIndicator: React.FC = () => {
-        const [topPosition, setTopPosition] = useState(0);
-        const indicatorRef = useRef<HTMLDivElement>(null);
-
-        useEffect(() => {
-            const updatePosition = () => {
-                const now = new Date();
-                const hours = now.getHours();
-                const minutes = now.getMinutes();
-                const newTop = (hours + minutes / 60) * HOUR_HEIGHT_REM;
-                setTopPosition(newTop);
-            };
-
-            updatePosition();
-            const intervalId = setInterval(updatePosition, 60000); // Update every minute
-
-            return () => clearInterval(intervalId);
-        }, []);
-        
-        if (topPosition > 24 * HOUR_HEIGHT_REM) return null;
-
-        return (
-            <div ref={indicatorRef} className="absolute left-0 right-0 z-20 flex items-center" style={{ top: `${topPosition}rem`}}>
-                <div className="w-2 h-2 -ml-1 bg-red-500 rounded-full"></div>
-                <div className="h-0.5 flex-grow bg-red-500"></div>
-            </div>
-        );
-    };
-
-    const DayView: React.FC<{ currentDate: Date; events: AgendaItem[], onEventClick: (event: AgendaItem) => void, onSlotClick: (date: Date) => void }> = ({ currentDate, events, onEventClick, onSlotClick }) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const isToday = currentDate.toDateString() === today.toDateString();
-
-        const hours = Array.from({ length: 24 }, (_, i) => i);
-        const dayEvents = events.filter(e => {
-            const eventDate = new Date(e.start);
-            return eventDate.toDateString() === currentDate.toDateString();
-        });
-        
-        const handleGridClick = (hour: number, e: React.MouseEvent) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const y = e.clientY - rect.top;
-            const minute = Math.floor((y / rect.height) * 60);
-            const clickedDate = new Date(currentDate);
-            clickedDate.setHours(hour, minute);
-            onSlotClick(clickedDate);
-        };
-
-        return (
-            <div className="flex flex-col">
-                <div className="grid grid-cols-[3rem_1fr] flex-shrink-0">
-                    <div className="w-12"></div>
-                    <div className="text-center py-2 border-b border-slate-700">
-                        <span className="text-xs text-slate-400">{WEEK_DAYS_CALENDAR[currentDate.getDay()]}</span>
-                        <span className={`block text-lg font-bold ${isToday ? 'bg-blue-500 text-white rounded-full h-7 w-7 mx-auto flex items-center justify-center' : 'text-slate-200'}`}>{currentDate.getDate()}</span>
-                    </div>
-                </div>
-                <div className="grid grid-cols-[3rem_1fr] overflow-y-auto" style={{ height: `${HOUR_HEIGHT_REM * 12}rem`}}>
-                    <div className="w-12 border-r border-slate-700">
-                        {hours.map(h => (
-                            <div key={h} className="text-right pr-2 text-xs text-slate-500 -mt-2" style={{height: `${HOUR_HEIGHT_REM}rem`}}>
-                               {h > 0 ? `${h}:00` : ''}
-                            </div>
-                        ))}
-                    </div>
-                    <div className="relative">
-                        {hours.map(h => <div key={h} onClick={(e) => handleGridClick(h, e)} className="border-b border-slate-700/50" style={{height: `${HOUR_HEIGHT_REM}rem`}}></div>)}
-                        {isToday && <CurrentTimeIndicator />}
-                        {dayEvents.map(event => {
-                            const start = new Date(event.start);
-                            const end = new Date(event.end);
-                            const top = (start.getHours() + start.getMinutes() / 60) * HOUR_HEIGHT_REM;
-                            const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-                            const height = (durationMinutes / 60) * HOUR_HEIGHT_REM;
-
-                            return (
-                                <div 
-                                    key={event.id}
-                                    onClick={() => onEventClick(event)}
-                                    className="absolute left-1 right-1 bg-sky-800/80 backdrop-blur-sm text-white p-1.5 rounded-md z-10 border border-sky-600 cursor-pointer hover:bg-sky-700/80"
-                                    style={{ top: `${top}rem`, height: `${Math.max(height, 1.5)}rem`}}
-                                    title={`${event.title}\n${event.description}`}
-                                >
-                                    <p className="text-xs font-bold truncate">{event.title}</p>
-                                    <p className="text-[10px] truncate">{start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit'})}</p>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const MonthView: React.FC<{ currentDate: Date; events: AgendaItem[] }> = ({ currentDate, events }) => {
-        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        const startDate = new Date(monthStart);
-        startDate.setDate(startDate.getDate() - monthStart.getDay());
-        const endDate = new Date(monthEnd);
-        endDate.setDate(endDate.getDate() + (6 - monthEnd.getDay()));
-
-        const days = [];
-        let day = new Date(startDate);
-
-        while (day <= endDate) {
-            days.push(new Date(day));
-            day.setDate(day.getDate() + 1);
-        }
-
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
-        return (
-            <div className="grid grid-cols-7">
-                {WEEK_DAYS_CALENDAR.map(day => (
-                    <div key={day} className="text-center text-xs font-bold text-slate-400 py-2 border-b border-slate-700">{day}</div>
-                ))}
-                {days.map((d, i) => {
-                    const isCurrentMonth = d.getMonth() === currentDate.getMonth();
-                    const isToday = d.getTime() === today.getTime();
-                    const dayEvents = events.filter(e => new Date(e.start).toDateString() === d.toDateString());
-
-                    return (
-                        <div key={i} className={`relative min-h-[6rem] sm:min-h-[7rem] border-b border-r border-slate-700 p-1 ${isCurrentMonth ? 'bg-slate-800/30' : 'bg-slate-900/40'}`}>
-                            <span className={`text-xs ${isToday ? 'bg-blue-500 text-white rounded-full flex items-center justify-center h-5 w-5 font-bold' : isCurrentMonth ? 'text-slate-300' : 'text-slate-600'}`}>
-                                {d.getDate()}
-                            </span>
-                            <div className="mt-1 space-y-1">
-                                {dayEvents.slice(0, 2).map(event => (
-                                     <div key={event.id} className="text-[10px] bg-blue-800 text-white p-1 rounded-md truncate" title={event.title}>
-                                        {event.title}
-                                    </div>
-                                ))}
-                                {dayEvents.length > 2 && (
-                                     <div className="text-[10px] text-slate-400">+ {dayEvents.length - 2} mais</div>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
-
-
-    const WeekView: React.FC<{ currentDate: Date; events: AgendaItem[]; onEventClick: (event: AgendaItem) => void, onSlotClick: (date: Date) => void }> = ({ currentDate, events, onEventClick, onSlotClick }) => {
-        const weekStart = new Date(currentDate);
-        const dayOfWeek = weekStart.getDay();
-        weekStart.setDate(weekStart.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
-
-        const days = Array.from({ length: 7 }).map((_, i) => {
-            const d = new Date(weekStart);
-            d.setDate(d.getDate() + i);
-            return d;
-        });
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const hours = Array.from({ length: 24 }, (_, i) => i);
-
-        const handleGridClick = (hour: number, day: Date, e: React.MouseEvent) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const y = e.clientY - rect.top;
-            const minute = Math.floor((y / rect.height) * 60);
-            const clickedDate = new Date(day);
-            clickedDate.setHours(hour, minute);
-            onSlotClick(clickedDate);
-        };
-
-        return (
-            <div className="flex flex-col">
-                <div className="grid grid-cols-[3rem_1fr] flex-shrink-0">
-                    <div className="w-12"></div>
-                    <div className="grid grid-cols-7">
-                        {days.map(d => {
-                            const isToday = d.toDateString() === today.toDateString();
-                            return (
-                                <div key={d.toISOString()} className="text-center py-2 border-b border-slate-700">
-                                    <span className="text-xs text-slate-400">{WEEK_DAYS_CALENDAR[d.getDay()]}</span>
-                                    <span className={`block text-lg font-bold ${isToday ? 'bg-blue-500 text-white rounded-full h-7 w-7 mx-auto flex items-center justify-center' : 'text-slate-200'}`}>{d.getDate()}</span>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-                <div className="grid grid-cols-[3rem_1fr] overflow-y-auto" style={{ height: `${HOUR_HEIGHT_REM * 12}rem`}}>
-                    <div className="w-12 border-r border-slate-700">
-                        {hours.map(h => (
-                            <div key={h} className="text-right pr-2 text-xs text-slate-500 -mt-2" style={{height: `${HOUR_HEIGHT_REM}rem`}}>
-                               {h > 0 ? `${h}:00` : ''}
-                            </div>
-                        ))}
-                    </div>
-                    <div className="grid grid-cols-7 relative">
-                         {days.map((d, dayIndex) => (
-                             <div key={dayIndex} className="border-r border-slate-700 relative">
-                                {hours.map(h => <div key={h} onClick={(e) => handleGridClick(h, d, e)} className="border-b border-slate-700/50" style={{height: `${HOUR_HEIGHT_REM}rem`}}></div>)}
-                            </div>
-                         ))}
-                         {days.findIndex(d => d.toDateString() === new Date().toDateString()) !== -1 && <CurrentTimeIndicator />}
-                         {events.map(event => {
-                            const start = new Date(event.start);
-                            const end = new Date(event.end);
-                            const eventDayIndex = days.findIndex(d => d.toDateString() === start.toDateString());
-                            if (eventDayIndex === -1) return null;
-
-                            const top = (start.getHours() + start.getMinutes() / 60) * HOUR_HEIGHT_REM;
-                            const durationMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-                            const height = (durationMinutes / 60) * HOUR_HEIGHT_REM;
-
-                            return (
-                                <div 
-                                    key={event.id}
-                                    onClick={() => onEventClick(event)}
-                                    className="absolute bg-sky-800/80 text-white p-1.5 rounded-md z-10 border border-sky-600 cursor-pointer hover:bg-sky-700/80 overflow-hidden"
-                                    style={{ 
-                                        top: `${top}rem`, 
-                                        height: `${Math.max(height, 1.5)}rem`,
-                                        left: `calc(${(100/7) * eventDayIndex}% + 0.25rem)`,
-                                        width: `calc(${(100/7)}% - 0.5rem)`
-                                    }}
-                                    title={`${event.title}\n${event.description}`}
-                                >
-                                    <p className="text-[11px] font-bold truncate">{event.title}</p>
-                                    <p className="text-[10px] truncate">{start.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit'})}</p>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const MONTH_NAMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-    const YearView: React.FC<{ currentDate: Date; events: AgendaItem[] }> = ({ currentDate, events }) => {
-        const year = currentDate.getFullYear();
-
-        const MiniMonth: React.FC<{ month: number }> = ({ month }) => {
-            const monthStart = new Date(year, month, 1);
-            const monthEnd = new Date(year, month + 1, 0);
-            const startDate = new Date(monthStart);
-            startDate.setDate(startDate.getDate() - monthStart.getDay());
-            const endDate = new Date(monthEnd);
-            endDate.setDate(endDate.getDate() + (6 - monthEnd.getDay()));
-
-            const days = [];
-            let day = new Date(startDate);
-            while (day <= endDate) {
-                days.push(new Date(day));
-                day.setDate(day.getDate() + 1);
-            }
-
-            const eventsByDay: { [key: string]: number } = events.reduce((acc, event) => {
-                const eventDate = new Date(event.start).toDateString();
-                acc[eventDate] = (acc[eventDate] || 0) + 1;
-                return acc;
-            }, {} as {[key: string]: number});
-
-            return (
-                <div className="bg-slate-800/50 p-2 rounded-lg border border-slate-700">
-                    <h4 className="font-bold text-center text-sm text-blue-300 mb-2">{MONTH_NAMES[month]}</h4>
-                    <div className="grid grid-cols-7 text-center text-[10px] text-slate-500">
-                        {WEEK_DAYS_CALENDAR.map(d => <span key={d}>{d[0]}</span>)}
-                    </div>
-                    <div className="grid grid-cols-7 text-center text-xs">
-                        {days.map((d, i) => {
-                            const isCurrentMonth = d.getMonth() === month;
-                            const hasEvents = eventsByDay[d.toDateString()] > 0;
-                            return (
-                                <span key={i} className={`p-0.5 ${!isCurrentMonth ? 'text-slate-600' : 'text-slate-200'} ${hasEvents ? 'bg-blue-500/50 rounded-full' : ''}`}>
-                                    {d.getDate()}
-                                </span>
-                            );
-                        })}
-                    </div>
-                </div>
-            );
-        };
-        
-        return (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {MONTH_NAMES.map((_, i) => <MiniMonth key={i} month={i} />)}
-            </div>
-        );
-    };
-
-    switch(view) {
-        case 'day':
-            return <DayView currentDate={currentDate} events={events} onEventClick={onEventClick} onSlotClick={onSlotClick}/>;
-        case 'week':
-            return <WeekView currentDate={currentDate} events={events} onEventClick={onEventClick} onSlotClick={onSlotClick}/>;
-        case 'month':
-            return <MonthView currentDate={currentDate} events={events} />;
-        case 'year':
-            return <YearView currentDate={currentDate} events={events} />;
-        default:
-            return <WeekView currentDate={currentDate} events={events} onEventClick={onEventClick} onSlotClick={onSlotClick}/>;
-    }
-};
-
-const AgendaPanel: React.FC<{ isActive: boolean; items: AgendaItem[]; onSync: (startDate: string, endDate: string) => void; isSyncing: boolean; syncError: string | null; isConfigured: boolean; onSaveEvent: (eventData: Omit<AgendaItem, 'id'> | AgendaItem) => Promise<void>; onDeleteEvent: (eventId: string) => Promise<void>; eventModalState: { isOpen: boolean; event: Partial<AgendaItem> | null; setIsOpen: (isOpen: boolean) => void; setEvent: (event: Partial<AgendaItem> | null) => void; }; }> = ({ isActive, items, onSync, isSyncing, syncError, isConfigured, onSaveEvent, onDeleteEvent, eventModalState }) => {
-    const [currentDate, setCurrentDate] = useState(new Date());
-    const [view, setView] = useState<'day' | 'week' | 'month' | 'year'>('day');
-
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setView('day');
-            } else {
-                setView('week');
-            }
-        };
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    const { startDate, endDate } = useMemo(() => {
-        const getDayRange = (date: Date) => { const start = new Date(date); const end = new Date(date); return { start, end }; };
-        const getWeekRange = (date: Date) => { const start = new Date(date); const day = start.getDay(); const diff = start.getDate() - day + (day === 0 ? -6 : 1); start.setDate(diff); const end = new Date(start); end.setDate(start.getDate() + 6); return { start, end }; };
-        const getMonthRange = (date: Date) => { const start = new Date(date.getFullYear(), date.getMonth(), 1); const end = new Date(date.getFullYear(), date.getMonth() + 1, 0); return { start, end }; };
-        const getYearRange = (date: Date) => { const start = new Date(date.getFullYear(), 0, 1); const end = new Date(date.getFullYear(), 11, 31); return { start, end }; };
-
-        let range;
-        switch(view) {
-            case 'day': range = getDayRange(currentDate); break;
-            case 'week': range = getWeekRange(currentDate); break;
-            case 'month': range = getMonthRange(currentDate); break;
-            case 'year': range = getYearRange(currentDate); break;
-        }
-        return {
-            startDate: range.start.toISOString().split('T')[0],
-            endDate: range.end.toISOString().split('T')[0]
-        };
-    }, [currentDate, view]);
-
-    useEffect(() => {
-        if (isActive && isConfigured) {
-            onSync(startDate, endDate);
-        }
-    }, [isActive, isConfigured, startDate, endDate, onSync]);
-    
-    const handleNav = (direction: 'prev' | 'next' | 'today') => {
-        if (direction === 'today') {
-            setCurrentDate(new Date());
-            return;
-        }
-        const newDate = new Date(currentDate);
-        const increment = direction === 'next' ? 1 : -1;
-        switch(view) {
-            case 'day': newDate.setDate(newDate.getDate() + increment); break;
-            case 'week': newDate.setDate(newDate.getDate() + (7 * increment)); break;
-            case 'month': newDate.setMonth(newDate.getMonth() + increment); break;
-            case 'year': newDate.setFullYear(newDate.getFullYear() + increment); break;
-        }
-        setCurrentDate(newDate);
-    };
-    
-    const handleEventClick = (event: AgendaItem) => {
-        eventModalState.setEvent(event);
-        eventModalState.setIsOpen(true);
-    };
-    
-    const handleSlotClick = (date: Date) => {
-        const end = new Date(date.getTime() + 60 * 60 * 1000);
-        eventModalState.setEvent({
-            title: '', description: '', start: date.toISOString(), end: end.toISOString(), isAllDay: false
-        });
-        eventModalState.setIsOpen(true);
-    };
-
-    const headerTitle = useMemo(() => {
-        switch(view) {
-            case 'day': return currentDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-            case 'week': {
-                const start = new Date(startDate + 'T00:00:00');
-                const end = new Date(endDate + 'T00:00:00');
-                const startMonth = start.toLocaleString('pt-BR', { month: 'long' });
-                const endMonth = end.toLocaleString('pt-BR', { month: 'long' });
-                if (startMonth === endMonth) {
-                    return `${start.getDate()} - ${end.getDate()} de ${endMonth} de ${end.getFullYear()}`;
-                }
-                return `${start.getDate()} de ${startMonth} - ${end.getDate()} de ${endMonth} de ${end.getFullYear()}`;
-            }
-            case 'month': return currentDate.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
-            case 'year': return currentDate.getFullYear().toString();
-        }
-    }, [startDate, endDate, view, currentDate]);
-
-    return (
-        <div className="p-4 sm:p-6 bg-blue-900/20 rounded-lg border border-blue-700 shadow-lg backdrop-blur-sm">
-            {eventModalState.isOpen && (
-                <EventModal eventData={eventModalState.event} onClose={() => eventModalState.setIsOpen(false)} onSave={onSaveEvent} onDelete={onDeleteEvent} />
-            )}
-            {!isConfigured ? (
-                <div className="text-center p-4 rounded-lg bg-amber-900/30 border border-amber-700">
-                    <p className="text-amber-300"><strong className="font-semibold">Ação Necessária:</strong> Para usar a agenda, por favor, configure o <strong className="font-semibold">ID da sua Google Agenda</strong> no painel de Configurações.</p>
-                </div>
-            ) : (
-            <div>
-                <header className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => handleNav('today')} className="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 rounded-md">Hoje</button>
-                        <div className="flex items-center gap-2">
-                             <button onClick={() => handleNav('prev')} className="p-2 bg-slate-700 hover:bg-slate-600 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg></button>
-                             <button onClick={() => handleNav('next')} className="p-2 bg-slate-700 hover:bg-slate-600 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg></button>
-                        </div>
-                        <h3 className="text-lg sm:text-xl font-bold text-slate-100 capitalize">{headerTitle}</h3>
-                    </div>
-                    <div className="flex items-center gap-2 bg-slate-800 p-1 rounded-md">
-                        <button onClick={() => setView('day')} className={`px-3 py-1 text-sm rounded ${view === 'day' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}>Dia</button>
-                        <button onClick={() => setView('week')} className={`px-3 py-1 text-sm rounded ${view === 'week' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}>Semana</button>
-                        <button onClick={() => setView('month')} className={`px-3 py-1 text-sm rounded ${view === 'month' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}>Mês</button>
-                        <button onClick={() => setView('year')} className={`px-3 py-1 text-sm rounded ${view === 'year' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}>Ano</button>
-                    </div>
-                </header>
-                {syncError && <p className="text-center text-red-400 bg-red-900/30 p-3 rounded-md mb-4">{syncError}</p>}
-                <div className="bg-slate-800/50 p-1 sm:p-2 rounded-lg border border-slate-700">
-                     {isSyncing ? (
-                        <div className="text-center py-20 text-slate-500">
-                            <svg className="animate-spin h-8 w-8 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            Carregando eventos...
-                        </div>
-                    ) : <CalendarView view={view} currentDate={currentDate} events={items} onEventClick={handleEventClick} onSlotClick={handleSlotClick} /> }
-                </div>
-            </div>
-            )}
-        </div>
-    );
-};
-
 const ClientCard: React.FC<{ client: Client; onArchive: (id: string, isArchived: boolean) => void; onDeleteContract: (id: string) => void; onUpdateDates: (id: string, startDate: string, endDate: string) => void; onUpdateContactInfo: (id: string, phone: string, instagram: string, email: string, cpf: string, cnpj: string, companyName: string) => void; onUpdatePackageInfo: (id: string, packageInfo: string) => void; onRenew: (link: TrackedLink) => void; pendingActions: {[key: string]: string | null}; }> = ({ client, onArchive, onDeleteContract, onUpdateDates, onUpdateContactInfo, onUpdatePackageInfo, onRenew, pendingActions }) => {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [storyCopiedId, setStoryCopiedId] = useState<string | null>(null);
@@ -1614,7 +1054,7 @@ const RoutineChecklist: React.FC<{ tasks: RoutineTask[]; completions: TaskComple
                     </span>
                 )}
                 <button onClick={() => handleDeleteTask(task.id)} className="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Excluir">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
             </div>
         </div>
@@ -1645,4 +1085,314 @@ const RoutineChecklist: React.FC<{ tasks: RoutineTask[]; completions: TaskComple
           )}
         </>
       ) : (
-        <div className="text-center py-10
+        <div className="text-center py-10 px-6 bg-slate-800/30 rounded-lg border border-dashed border-slate-700">
+            <h3 className="text-lg font-semibold text-slate-300">Sua lista de rotinas está vazia</h3>
+            <p className="mt-1 text-slate-400">Use o formulário abaixo para começar a criar suas tarefas.</p>
+        </div>
+      )}
+
+      <div className="pt-6 border-t border-blue-800/50">
+             <h3 className="text-lg font-semibold text-slate-200 mb-4">Adicionar Nova Tarefa</h3>
+             <div className="space-y-4 p-4 bg-slate-800/40 rounded-lg border border-slate-700">
+                <input type="text" value={newTaskText} onChange={(e) => setNewTaskText(e.target.value)} placeholder="Descrição da nova tarefa"
+                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400"/>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <select value={newTaskFreq} onChange={(e) => setNewTaskFreq(e.target.value as TaskFrequency)}
+                        className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400">
+                        <option value="daily">Diária</option>
+                        <option value="weekly">Semanal</option>
+                    </select>
+                    {newTaskFreq === 'weekly' ? (
+                        <select value={newTaskDay} onChange={(e) => setNewTaskDay(Number(e.target.value))}
+                            className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400">
+                            {Object.entries(dayOfWeekMap).map(([dayNum, dayName]) => <option key={dayNum} value={dayNum}>{dayName}</option>)}
+                        </select>
+                    ) : (
+                        <div>
+                             <label htmlFor="repetitions" className="block text-xs text-slate-400 mb-1">Repetições</label>
+                             <input id="repetitions" type="number" min="1" value={newTaskRepetitions} onChange={e => setNewTaskRepetitions(Math.max(1, parseInt(e.target.value, 10)))} className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400" />
+                        </div>
+                    )}
+                </div>
+                <button onClick={handleAddTask} className="w-full sm:w-auto px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-colors">
+                    Adicionar Tarefa
+                </button>
+             </div>
+        </div>
+    </div>
+  );
+};
+
+const ErpPanel: React.FC<{ transactions: FinancialTransaction[]; onTransactionAdded: () => void; }> = ({ transactions, onTransactionAdded }) => {
+    const [isExpenseFormVisible, setIsExpenseFormVisible] = useState(false);
+    const [expenseDescription, setExpenseDescription] = useState('');
+    const [expenseAmount, setExpenseAmount] = useState('');
+
+    const { totalRevenue, totalExpenses, netProfit } = useMemo(() => {
+        const totalRevenue = transactions
+            .filter(t => t.type === 'receita')
+            .reduce((sum, t) => sum + t.amount, 0);
+        
+        const totalExpenses = transactions
+            .filter(t => t.type === 'despesa')
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        const netProfit = totalRevenue - totalExpenses;
+        return { totalRevenue, totalExpenses, netProfit };
+    }, [transactions]);
+
+    const handleAddExpense = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!expenseDescription || !expenseAmount) {
+            alert("Preencha a descrição e o valor da despesa.");
+            return;
+        }
+        const amount = parseFloat(expenseAmount);
+        if (isNaN(amount) || amount <= 0) {
+            alert("O valor da despesa deve ser um número positivo.");
+            return;
+        }
+
+        try {
+            await api.addTransaction({
+                date: new Date().toISOString(),
+                description: expenseDescription,
+                type: 'despesa',
+                amount: amount,
+            });
+            onTransactionAdded(); // Callback to refresh data in App.tsx
+            setExpenseDescription('');
+            setExpenseAmount('');
+            setIsExpenseFormVisible(false);
+        } catch (error) {
+            alert(`Erro ao adicionar despesa: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        }
+    };
+    
+    const StatCard: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => ( <div className={`bg-slate-800/50 p-5 rounded-lg border border-slate-700 flex flex-col ${className}`}> <h3 className="text-sm font-medium text-slate-400 mb-2">{title}</h3> <div className="flex-grow flex flex-col justify-center">{children}</div> </div> );
+
+    return (
+        <div className="p-6 bg-blue-900/20 rounded-lg border border-blue-700 shadow-lg backdrop-blur-sm space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <StatCard title="Receita Total">
+                     <p className="text-3xl font-bold text-green-400">
+                        R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                     </p>
+                </StatCard>
+                <StatCard title="Despesa Total">
+                    <p className="text-3xl font-bold text-red-400">
+                        R$ {totalExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                </StatCard>
+                 <StatCard title="Lucro Líquido">
+                    <p className={`text-3xl font-bold ${netProfit >= 0 ? 'text-teal-400' : 'text-orange-400'}`}>
+                       R$ {netProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                </StatCard>
+            </div>
+
+            <div>
+                <div className="flex justify-between items-center mb-3">
+                     <h3 className="text-lg font-semibold text-slate-200">Extrato de Transações (Livro-Caixa)</h3>
+                     <button onClick={() => setIsExpenseFormVisible(!isExpenseFormVisible)} className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition-colors">
+                        + Lançar Despesa
+                     </button>
+                </div>
+
+                {isExpenseFormVisible && (
+                    <form onSubmit={handleAddExpense} className="p-4 mb-4 bg-slate-800/50 rounded-lg border border-slate-700 space-y-3">
+                        <h4 className="font-semibold text-slate-300">Nova Despesa</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <input type="text" placeholder="Descrição (ex: Ferramenta de E-mail)" value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)}
+                                className="md:col-span-2 px-3 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400" />
+                            <input type="number" placeholder="Valor (R$)" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)}
+                                className="px-3 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400" />
+                        </div>
+                        <div className="flex gap-2">
+                             <button type="submit" className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md">Salvar</button>
+                             <button type="button" onClick={() => setIsExpenseFormVisible(false)} className="px-4 py-2 text-sm bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-md">Cancelar</button>
+                        </div>
+                    </form>
+                )}
+
+                <div className="overflow-x-auto max-h-72">
+                     <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-slate-400 uppercase bg-slate-800/60 sticky top-0">
+                            <tr>
+                                <th scope="col" className="px-4 py-2">Data</th>
+                                <th scope="col" className="px-4 py-2">Descrição</th>
+                                <th scope="col" className="px-4 py-2 text-center">Tipo</th>
+                                <th scope="col" className="px-4 py-2 text-right">Valor (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {transactions.length > 0 ? [...transactions].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(t => (
+                                <tr key={t.id} className="border-b border-slate-700 hover:bg-slate-700/50">
+                                    <td className="px-4 py-2 text-slate-300">{new Date(t.date).toLocaleDateString('pt-BR')}</td>
+                                    <td className="px-4 py-2 font-medium text-slate-100">{t.description}</td>
+                                    <td className="px-4 py-2 text-center">
+                                        <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${t.type === 'receita' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>{t.type}</span>
+                                    </td>
+                                    <td className={`px-4 py-2 text-right font-semibold ${t.type === 'receita' ? 'text-green-300' : 'text-red-300'}`}>
+                                        {t.type === 'despesa' && '- '}{t.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan={4} className="text-center py-6 text-slate-500 italic">Nenhuma transação registrada.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const SettingsPanel: React.FC<{ settings: Settings; onSettingsChange: (settings: Settings) => Promise<void>; }> = ({ settings, onSettingsChange }) => {
+    const [calendarId, setCalendarId] = useState('');
+    const [zapiInstanceId, setZapiInstanceId] = useState('');
+    const [zapiToken, setZapiToken] = useState('');
+    const [zapiClientToken, setZapiClientToken] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        setCalendarId(settings.googleCalendarId || '');
+        setZapiInstanceId(settings.zapiInstanceId || '');
+        setZapiToken(settings.zapiToken || '');
+        setZapiClientToken(settings.zapiClientToken || '');
+    }, [settings]);
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            await onSettingsChange({ 
+                ...settings, 
+                googleCalendarId: calendarId.trim(),
+                zapiInstanceId: zapiInstanceId.trim(),
+                zapiToken: zapiToken.trim(),
+                zapiClientToken: zapiClientToken.trim()
+            });
+        } catch (error) {
+            // Error is handled by the parent component (App.tsx)
+        } finally {
+            setIsSaving(false);
+        }
+    }
+
+    return (
+        <div className="p-6 bg-blue-900/20 rounded-lg border border-blue-700 shadow-lg backdrop-blur-sm space-y-8">
+            <h2 className="text-2xl font-bold text-slate-100">Configurações</h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Coluna da Esquerda: Credenciais */}
+                <div className="space-y-6">
+                    <h3 className="text-xl font-semibold text-slate-200 border-b border-blue-800 pb-2">Credenciais e Integrações</h3>
+                     <div className="space-y-6 p-4 bg-slate-800/40 rounded-lg border border-slate-700">
+                         <div>
+                            <label htmlFor="google-calendar-id" className="block text-lg font-medium text-slate-300 mb-1">ID da Google Agenda</label>
+                            <p className="text-xs text-slate-400 mb-2">Necessário para criar tarefas e eventos automaticamente.</p>
+                            <input 
+                                id="google-calendar-id" 
+                                type="text" 
+                                value={calendarId}
+                                onChange={(e) => setCalendarId(e.target.value)}
+                                placeholder="seu-email@gmail.com" 
+                                className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400"
+                            />
+                         </div>
+                         <div className="space-y-4">
+                            <h4 className="block text-lg font-medium text-slate-300 mb-1">Credenciais Z-API</h4>
+                            <p className="text-xs text-slate-400 mb-2">Credenciais para enviar mensagens pelo NOCA WhatsApp.</p>
+                             <div>
+                                <label htmlFor="zapi-instance-id" className="block text-sm font-medium text-slate-400 mb-1">ID da Instância</label>
+                                <input 
+                                    id="zapi-instance-id" 
+                                    type="text" 
+                                    value={zapiInstanceId}
+                                    onChange={(e) => setZapiInstanceId(e.target.value)}
+                                    placeholder="Cole o ID da sua instância Z-API" 
+                                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400"
+                                />
+                             </div>
+                             <div>
+                                <label htmlFor="zapi-token" className="block text-sm font-medium text-slate-400 mb-1">Token da Instância</label>
+                                <input 
+                                    id="zapi-token" 
+                                    type="password" 
+                                    value={zapiToken}
+                                    onChange={(e) => setZapiToken(e.target.value)}
+                                    placeholder="Cole o Token da sua instância Z-API" 
+                                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400"
+                                />
+                             </div>
+                              <div>
+                                <label htmlFor="zapi-client-token" className="block text-sm font-medium text-slate-400 mb-1">Token de Segurança (Client-Token)</label>
+                                <input 
+                                    id="zapi-client-token" 
+                                    type="password" 
+                                    value={zapiClientToken}
+                                    onChange={(e) => setZapiClientToken(e.target.value)}
+                                    placeholder="Cole o Client-Token da sua conta Z-API" 
+                                    className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-md focus:ring-2 focus:ring-blue-400"
+                                />
+                             </div>
+                         </div>
+                    </div>
+                     <div className="flex items-center gap-4 pt-4 border-t border-blue-800/50">
+                        <button 
+                            onClick={handleSave}
+                            disabled={isSaving}
+                            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-wait"
+                        >
+                            {isSaving ? 'Salvando...' : 'Salvar Credenciais'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Coluna da Direita: Diagnóstico de Webhook */}
+                 <div className="space-y-6">
+                    <h3 className="text-xl font-semibold text-slate-200 border-b border-blue-800 pb-2">Webhook e Diagnóstico</h3>
+                    <WebhookDiagnostics />
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const CrmView: React.FC<{ leads: WhatsAppLead[]; onUpdateStage: (id: string, newStage: string) => void; }> = ({ leads, onUpdateStage }) => {
+    // FIX: Moved initialColumns declaration before its use in useState.
+    const initialColumns: Omit<WhatsAppColumn, 'leads'>[] = [ { id: 'new', title: 'Novo Contato' }, { id: 'negotiation', title: 'Em Negociação' }, { id: 'payment', title: 'Aguardando Pagamento' }, { id: 'active', title: 'Cliente Ativo' }, ];
+    const [columns, setColumns] = useState<WhatsAppColumn[]>(initialColumns.map(c => ({...c, leads: []})));
+    const [draggingLead, setDraggingLead] = useState<{ leadId: string; sourceColId: string } | null>(null);
+    const [dragOverColId, setDragOverColId] = useState<string | null>(null);
+    const LeadCard: React.FC<{ lead: WhatsAppLead; isDragging: boolean; onDragStart: () => void; }> = ({ lead, isDragging, onDragStart }) => ( <div draggable onDragStart={onDragStart} className={`p-3 bg-slate-800 rounded-lg border border-slate-700 shadow-sm cursor-grab hover:bg-slate-700 hover:border-blue-500 transition-colors ${isDragging ? 'opacity-50' : ''}`} > <div className="flex items-start justify-between"> <p className="text-sm font-semibold text-slate-200">{lead.name}</p> <span className="text-xs text-slate-500">{lead.timestamp || ''}</span> </div> <p className="text-xs text-slate-400 mt-1 truncate">{lead.lastMessage || lead.phone}</p> </div> );
+
+    useEffect(() => {
+        const leadsByStage: Record<string, WhatsAppLead[]> = { new: [], negotiation: [], payment: [], active: [], };
+        leads.forEach(lead => { const stage = lead.stage || 'new'; if (leadsByStage[stage]) { leadsByStage[stage].push(lead); } else { leadsByStage.new.push(lead); } });
+        setColumns(prev => prev.map(col => ({ ...col, leads: leadsByStage[col.id] || [] })));
+    }, [leads]);
+
+    const handleDragStart = (leadId: string, sourceColId: string) => setDraggingLead({ leadId, sourceColId });
+    const handleDragOver = (e: React.DragEvent, colId: string) => { e.preventDefault(); if (colId !== dragOverColId) setDragOverColId(colId); };
+    const handleDragLeave = () => setDragOverColId(null);
+    const handleDrop = (destColId: string) => {
+        if (!draggingLead) return;
+        const { leadId, sourceColId } = draggingLead;
+        if (sourceColId === destColId) { setDraggingLead(null); setDragOverColId(null); return; }
+        let leadToMove: WhatsAppLead | undefined;
+        const newColumns = columns.map(col => { if (col.id === sourceColId) { leadToMove = col.leads.find(l => l.id === leadId); return { ...col, leads: col.leads.filter(l => l.id !== leadId) }; } return col; });
+        if (leadToMove) { const finalColumns = newColumns.map(col => { if (col.id === destColId) { return { ...col, leads: [...col.leads, leadToMove!] }; } return col; }); setColumns(finalColumns); onUpdateStage(leadToMove.id, destColId); }
+        setDraggingLead(null); setDragOverColId(null);
+    };
+
+    return ( <div> <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-3"> <h3 className="text-lg font-bold text-slate-100">Funil de Vendas</h3> <div className="flex items-center gap-2 w-full md:w-auto"> <input type="text" placeholder="Buscar..." className="w-full md:w-auto px-3 py-1.5 text-sm bg-slate-900/50 border border-slate-600 rounded-md focus:ring-2 focus:ring-green-400"/> <button className="px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 rounded-md">Filtrar</button> </div> </div> <div className="flex flex-col md:flex-row gap-4 md:overflow-x-auto pb-4"> {columns.map(column => ( <div key={column.id} onDragOver={(e) => handleDragOver(e, column.id)} onDrop={() => handleDrop(column.id)} onDragLeave={handleDragLeave} className={`w-full md:w-72 md:flex-shrink-0 bg-slate-900/50 p-3 rounded-lg border border-slate-700 transition-colors ${dragOverColId === column.id ? 'bg-slate-700/50' : ''}`} > <h4 className="font-semibold text-slate-200 mb-3 text-center text-sm tracking-wider">{column.title} <span className="text-slate-500 ml-1">({column.leads.length})</span></h4> <div className="space-y-3 min-h-[300px] md:h-[400px] overflow-y-auto pr-1"> {column.leads.map(lead => <LeadCard key={lead.id} lead={lead} isDragging={draggingLead?.leadId === lead.id} onDragStart={() => handleDragStart(lead.id, column.id)} /> )} {dragOverColId === column.id && ( <div className="h-24 rounded-lg border-2 border-dashed border-green-500 bg-green-500/10 flex items-center justify-center"> <p className="text-sm text-green-400">Solte aqui</p> </div> )} </div> </div> ))} </div> </div> );
+};
+
+const DisparosView: React.FC<{ contacts: WhatsAppLead[]; settings: Settings; }> = ({ contacts, settings }) => {
+    const [selectedContacts, setSelectedContacts] = useState<WhatsAppLead[]>([]); const [campaignName, setCampaignName] = useState(''); const [campaignTags, setCampaignTags] = useState(''); const [message, setMessage] = useState(''); const [aiPrompt, setAiPrompt] = useState(''); const [isGenerating, setIsGenerating] = useState(false); const [sendDelay, setSendDelay] = useState(5); const [isSending, setIsSending] = useState(false); const [sendStatus, setSendStatus] = useState({ sent: 0, failed: 0, total: 0, progress: 0 }); const [failedMessages, setFailedMessages] = useState<string[]>([]);
+    const availableContacts: WhatsAppLead[] = contacts.filter(c => c.phone);
+    const handleToggleContact = (contact: WhatsAppLead) => setSelectedContacts(prev => prev.some(c => c.id === contact.id) ? prev.filter(c => c.id !== contact.id) : [...prev, contact] );
+    const handleGenerateMessage = async () => { if (!aiPrompt.trim()) return alert("Por favor, descreva o objetivo da mensagem."); setIsGenerating(true); try { const generatedMsg = await api.generateWhatsAppMessage(campaignName || "Nossa Campanha", aiPrompt); setMessage(generatedMsg); } catch
