@@ -1,0 +1,5 @@
+{
+  "name": "NOCA Gestor",
+  "description": "Uma aplicação para gerenciar links de clientes, contratos e interações do WhatsApp.",
+  "requestFramePermissions": []
+}
