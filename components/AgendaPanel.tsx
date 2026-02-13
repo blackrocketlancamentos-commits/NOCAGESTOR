@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { AgendaItem } from '../types';
-import { CalendarView } from './CalendarView';
-import { EventModal } from './EventModal';
+import { AgendaItem } from '../types.ts';
+import { CalendarView } from './CalendarView.tsx';
+import { EventModal } from './EventModal.tsx';
 
 interface EventModalState {
     isOpen: boolean;

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import * as api from '../services/api';
-import { GOOGLE_SCRIPT_URL } from '../config';
+import * as api from '../services/api.ts';
+import { GOOGLE_SCRIPT_URL } from '../config.ts';
 
 interface ClientInfo {
   name: string;

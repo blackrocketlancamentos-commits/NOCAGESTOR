@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AgendaItem } from '../types';
+import { AgendaItem } from '../types.ts';
 
 interface EventModalProps {
     eventData: Partial<AgendaItem> | null;

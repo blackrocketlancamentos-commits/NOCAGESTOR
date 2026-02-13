@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { WhatsAppLead, Settings } from '../../types';
-import * as api from '../../services/api';
+import { WhatsAppLead, Settings } from '../../types.ts';
+import * as api from '../../services/api.ts';
 
 interface DisparosViewProps {
   contacts: WhatsAppLead[];

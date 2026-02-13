@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { FinancialTransaction } from '../types';
-import * as api from '../services/api';
+import { FinancialTransaction } from '../types.ts';
+import * as api from '../services/api.ts';
 
 interface ErpPanelProps {
   transactions: FinancialTransaction[];

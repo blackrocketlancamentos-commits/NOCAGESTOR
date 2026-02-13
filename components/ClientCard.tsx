@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Client, TrackedLink, WorkMaterial, ClientType } from '../types';
-import { getStatus, parsePackageValue } from '../utils';
-import { GOOGLE_SCRIPT_URL } from '../config';
+import { Client, TrackedLink, WorkMaterial, ClientType } from '../types.ts';
+import { getStatus, parsePackageValue } from '../utils.ts';
+import { GOOGLE_SCRIPT_URL } from '../config.ts';
 
 interface ClientCardProps {
   client: Client;

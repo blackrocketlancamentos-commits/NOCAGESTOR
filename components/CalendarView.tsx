@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { AgendaItem } from '../types';
+import { AgendaItem } from '../types.ts';
 
 interface CalendarViewProps {
   view: 'day' | 'week' | 'month' | 'year';

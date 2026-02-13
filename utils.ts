@@ -1,5 +1,6 @@
+
 // FIX: Import missing types, now defined in `types.ts`.
-import { LinkStatus, RawChatMessage, ChatConversation, ChatMessage, TrackedLink, WhatsAppLead } from './types';
+import { LinkStatus, RawChatMessage, ChatConversation, ChatMessage, TrackedLink, WhatsAppLead } from './types.ts';
 
 export const getStatus = (endDate?: string): { text: LinkStatus; color: string; textColor: string; } | null => {
     if (!endDate) return null;

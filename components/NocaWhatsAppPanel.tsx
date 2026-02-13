@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { Settings, ChatConversation, WhatsAppLead } from '../types';
-import { CrmView } from './NocaWhatsApp/CrmView';
-import { DisparosView } from './NocaWhatsApp/DisparosView';
-import { ChatView } from './NocaWhatsApp/ChatView';
+import { Settings, ChatConversation, WhatsAppLead } from '../types.ts';
+import { CrmView } from './NocaWhatsApp/CrmView.tsx';
+import { DisparosView } from './NocaWhatsApp/DisparosView.tsx';
+import { ChatView } from './NocaWhatsApp/ChatView.tsx';
 
 interface NocaWhatsAppPanelProps {
   settings: Settings;

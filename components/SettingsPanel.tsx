@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { Settings } from '../types';
-import { WebhookDiagnostics } from './WebhookDiagnostics';
+import { Settings } from '../types.ts';
+import { WebhookDiagnostics } from './WebhookDiagnostics.tsx';
 
 interface SettingsPanelProps {
   settings: Settings;

@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { Client, TrackedLink, ClientType } from '../types';
-import { getStatus, parsePackageValue, parseContractType } from '../utils';
-import { GOOGLE_SCRIPT_URL } from '../config';
+import { Client, TrackedLink, ClientType } from '../types.ts';
+import { getStatus, parsePackageValue, parseContractType } from '../utils.ts';
+import { GOOGLE_SCRIPT_URL } from '../config.ts';
 
 interface ClientListRowProps {
   client: Client;

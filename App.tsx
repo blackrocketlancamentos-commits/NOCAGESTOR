@@ -1,28 +1,28 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import * as api from './services/api';
-import { TrackedLink, Client, ReportData, WorkMaterial, AgendaItem, FinancialTransaction, Settings, RawChatMessage, ChatConversation, LinkStatus, RoutineTask, ClientType, WhatsAppLead, TaskCompletions } from './types';
-import { GOOGLE_SCRIPT_URL } from './config';
-import { DiagnosticTool } from './components/DiagnosticTool';
-import { NewContractForm } from './components/NewContractForm';
-import { ReportModal } from './components/ReportModal';
-import { InfoModal } from './components/InfoModal';
-import { Dashboard } from './components/Dashboard';
-import { ClientListRow } from './components/ClientListRow';
-import { ClientCard } from './components/ClientCard';
-import { ReportGenerator } from './components/ReportGenerator';
-import { WhatsAppLinkForm } from './components/WhatsAppLinkForm';
-import { SimpleTrackerForm } from './components/SimpleTrackerForm';
-import { AgendaPanel } from './components/AgendaPanel';
-import { RoutineChecklist } from './components/RoutineChecklist';
-import { ErpPanel } from './components/ErpPanel';
-import { SettingsPanel } from './components/SettingsPanel';
-import { NocaWhatsAppPanel } from './components/NocaWhatsAppPanel';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { useDailyResetLocalStorage } from './hooks/useDailyResetLocalStorage';
-import { getStatus, parsePackageValue, processRawMessagesIntoConversations } from './utils';
-import { TabNavigation, Tab } from './components/TabNavigation';
-import { FeedbackToast } from './components/FeedbackToast';
+import * as api from './services/api.ts';
+import { TrackedLink, Client, ReportData, WorkMaterial, AgendaItem, FinancialTransaction, Settings, RawChatMessage, ChatConversation, LinkStatus, RoutineTask, ClientType, WhatsAppLead, TaskCompletions } from './types.ts';
+import { GOOGLE_SCRIPT_URL } from './config.ts';
+import { DiagnosticTool } from './components/DiagnosticTool.tsx';
+import { NewContractForm } from './components/NewContractForm.tsx';
+import { ReportModal } from './components/ReportModal.tsx';
+import { InfoModal } from './components/InfoModal.tsx';
+import { Dashboard } from './components/Dashboard.tsx';
+import { ClientListRow } from './components/ClientListRow.tsx';
+import { ClientCard } from './components/ClientCard.tsx';
+import { ReportGenerator } from './components/ReportGenerator.tsx';
+import { WhatsAppLinkForm } from './components/WhatsAppLinkForm.tsx';
+import { SimpleTrackerForm } from './components/SimpleTrackerForm.tsx';
+import { AgendaPanel } from './components/AgendaPanel.tsx';
+import { RoutineChecklist } from './components/RoutineChecklist.tsx';
+import { ErpPanel } from './components/ErpPanel.tsx';
+import { SettingsPanel } from './components/SettingsPanel.tsx';
+import { NocaWhatsAppPanel } from './components/NocaWhatsAppPanel.tsx';
+import { useLocalStorage } from './hooks/useLocalStorage.ts';
+import { useDailyResetLocalStorage } from './hooks/useDailyResetLocalStorage.ts';
+import { getStatus, parsePackageValue, processRawMessagesIntoConversations } from './utils.ts';
+import { TabNavigation, Tab } from './components/TabNavigation.tsx';
+import { FeedbackToast } from './components/FeedbackToast.tsx';
 
 
 const App: React.FC = () => {

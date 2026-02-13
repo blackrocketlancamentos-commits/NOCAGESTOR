@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { TrackedLink, ReportData } from '../types';
-import * as api from '../services/api';
-import { parsePackageValue } from '../utils';
-import { CrmDashboard } from './CrmDashboard';
+import { TrackedLink, ReportData } from '../types.ts';
+import * as api from '../services/api.ts';
+import { parsePackageValue } from '../utils.ts';
+import { CrmDashboard } from './CrmDashboard.tsx';
 
 
 interface DashboardProps {

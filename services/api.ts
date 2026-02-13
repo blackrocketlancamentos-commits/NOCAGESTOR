@@ -1,6 +1,6 @@
 
-import { GOOGLE_SCRIPT_URL } from '../config';
-import { TrackedLink, ReportData, WorkMaterial, AgendaItem, RoutineTask, FinancialTransaction, RawChatMessage, Settings, WhatsAppLead, WebhookLogEntry } from '../types';
+import { GOOGLE_SCRIPT_URL } from '../config.ts';
+import { TrackedLink, ReportData, WorkMaterial, AgendaItem, RoutineTask, FinancialTransaction, RawChatMessage, Settings, WhatsAppLead, WebhookLogEntry } from '../types.ts';
 import { GoogleGenAI } from "@google/genai";
 
 async function callApi(action: string, data: object = {}) {

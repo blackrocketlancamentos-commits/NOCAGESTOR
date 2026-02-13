@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import * as api from '../services/api';
-import { WebhookLogEntry } from '../types';
-import { GOOGLE_SCRIPT_URL } from '../config';
+import * as api from '../services/api.ts';
+import { WebhookLogEntry } from '../types.ts';
+import { GOOGLE_SCRIPT_URL } from '../config.ts';
 
 export const WebhookDiagnostics: React.FC = () => {
     const [logs, setLogs] = useState<WebhookLogEntry[]>([]);
