@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NOCA Gestor</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Adiciona o Babel Standalone para transpilar TSX no navegador -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -50,7 +52,8 @@
 </head>
   <body class="bg-slate-900">
     <div id="root"></div>
-    <script type="module" src="./index.tsx"></script>
+    <!-- Altera o tipo do script para text/babel e adiciona data-type="module" para que o Babel o processe -->
+    <script type="text/babel" data-type="module" src="./index.tsx"></script>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>
