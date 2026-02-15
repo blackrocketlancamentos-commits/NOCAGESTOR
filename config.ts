@@ -1,3 +1,4 @@
+
 // INSTRUÇÕES IMPORTANTES PARA CONFIGURAÇÃO
 // Se o aplicativo mostrar um "Guia de Configuração Inicial", significa que você precisa colocar aqui a URL do seu Google Apps Script.
 // Siga os passos no guia do aplicativo com atenção para criar uma NOVA implantação.
